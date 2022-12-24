@@ -1,1 +1,1 @@
-# SB-PlaceholderAPI-Addon
+# SB-PlaceholderAPI-Extension
