@@ -20,7 +20,7 @@ import org.json.simple.parser.ParseException;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
-public class SbConfigParser extends PlaceholderExpansion {
+public class ConfigParser extends PlaceholderExpansion {
     private final String VERSION = "1.1";
     HashMap<String, JSONObject> settings = new HashMap<>();
 
