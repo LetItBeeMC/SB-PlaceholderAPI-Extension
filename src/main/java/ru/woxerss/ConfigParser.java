@@ -135,11 +135,11 @@ public class ConfigParser extends PlaceholderExpansion {
         }
 
         if (paramsVector.get(0).equalsIgnoreCase("normalgenrates")) {
-            if (paramsArray.length == 3) {
+            if (paramsVector.size() == 3) {
                 return Upgrades.getNormalGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2));
             }
 
-            if (paramsArray.length == 4) {
+            if (paramsVector.size() == 4) {
                 return Upgrades.getNormalGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2) + "_" + paramsVector.get(3));
             }
         }
