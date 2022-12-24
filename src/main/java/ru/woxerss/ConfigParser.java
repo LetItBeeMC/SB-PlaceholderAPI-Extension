@@ -10,10 +10,9 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Vector;
 
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -21,10 +20,9 @@ import org.json.simple.parser.ParseException;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 public class ConfigParser extends PlaceholderExpansion {
-    private final String VERSION = "1.1";
-    HashMap<String, JSONObject> settings = new HashMap<>();
+    private final String VERSION = "1.2";
 
-    FileConfiguration upgradesConfig;
+    HashMap<String, JSONObject> settings = new HashMap<>();
 
     @Override
     public String getIdentifier() {
@@ -47,7 +45,7 @@ public class ConfigParser extends PlaceholderExpansion {
 
         if (Files.notExists(path, LinkOption.NOFOLLOW_LINKS)) {
             if (!path.toFile().mkdir()) {
-                this.getPlaceholderAPI().getLogger().warning("CustomJsonAddon: Cannot make new folder!");
+                this.getPlaceholderAPI().getLogger().warning("SB-Placeholder-Addon: Cannot make new folder!");
                 return false;
             }
         }
@@ -57,36 +55,35 @@ public class ConfigParser extends PlaceholderExpansion {
         if (!exampleFile.exists()) {
             try (PrintWriter pw = new PrintWriter(exampleFile)) {
                 HashMap<String,Object> exampleJson = new HashMap<>();
-                exampleJson.put("version", "1.0");
+                exampleJson.put("version", VERSION);
                 exampleJson.put("author", "Woxerss");
                 JSONObject data = new JSONObject(exampleJson);
                 data.writeJSONString(pw);
             } catch (FileNotFoundException e) {
-                this.getPlaceholderAPI().getLogger().warning("CustomJsonAddon: Exception while writing to example file!");
+                this.getPlaceholderAPI().getLogger().warning("SB-Placeholder-Addon: Exception while writing to example file!");
                 this.getPlaceholderAPI().getLogger().warning(e.toString());
                 return false;
             } catch (IOException e) {
-                this.getPlaceholderAPI().getLogger().warning("CustomJsonAddon: Exception while dumping example json to file!");
+                this.getPlaceholderAPI().getLogger().warning("SB-Placeholder-Addon: Exception while dumping example json to file!");
                 this.getPlaceholderAPI().getLogger().warning(e.toString());
                 e.printStackTrace();
             }
         }
             
         for (final File file : path.toFile().listFiles()) {
-            this.getPlaceholderAPI().getLogger().info("CustomJsonAddon: Reading " + file.getName());
+            this.getPlaceholderAPI().getLogger().info("SB-Placeholder-Addon: Reading " + file.getName());
 
             JSONParser parser = new JSONParser();
             try {
                 JSONObject data = (JSONObject) parser.parse(new FileReader(file));
                 settings.put(file.getName().replace(".json", ""), data);
             } catch (IOException | ParseException e) {
-                this.getPlaceholderAPI().getLogger().warning("CustomJsonAddon: Exception while reading " + file.getName());
+                this.getPlaceholderAPI().getLogger().warning("SB-Placeholder-Addon: Exception while reading " + file.getName());
                 this.getPlaceholderAPI().getLogger().warning(e.toString());
             }
         }
 
-        File file = new File(this.getPlaceholderAPI().getServer().getWorldContainer() + "/plugins/SuperiorSkyblock2/modules/upgrades/config.yml");
-        upgradesConfig = YamlConfiguration.loadConfiguration(file);
+        Upgrades.load(getPlaceholderAPI());
 
         return true;
     }
@@ -94,35 +91,57 @@ public class ConfigParser extends PlaceholderExpansion {
     @Override
     public String onRequest(OfflinePlayer offlinePlayer, String params) {
         String paramsArray[] = params.split("_");
+        Vector<String> paramsVector = new Vector<>();
 
-        if (paramsArray[0].equalsIgnoreCase("json")) {
-            if (paramsArray.length == 3) {
-                JSONObject data = settings.get(paramsArray[1]);
-                if (data != null) {
-                    return data.get(paramsArray[2]).toString();
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < paramsArray.length; i++) {
+            if (paramsArray[i].startsWith("$")) {
+                sb.append(paramsArray[i] + "_");
+                i++;
+
+                while (!paramsArray[i].endsWith("$")) {
+                    sb.append(paramsArray[i] + "_");
+                    i++;
                 }
-            }
-        }
 
-        if (paramsArray[0].equalsIgnoreCase("upgradescount")) {
-            String valuePath = "upgrades." + paramsArray[1];
-            if (paramsArray.length == 2) {
-                return upgradesConfig.getConfigurationSection(valuePath).getKeys(false).size() + "";
-            }
-        }
-
-        if (paramsArray[0].equalsIgnoreCase("upgrades")) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 1; i < paramsArray.length; i++) {
                 sb.append(paramsArray[i]);
-                if (i < paramsArray.length - 1) {
-                    sb.append(".");
+
+                paramsVector.add(sb.toString().replace("$", "%"));
+            } else {
+                paramsVector.add(paramsArray[i]);
+            }
+        }
+
+        if (paramsVector.get(0).equalsIgnoreCase("json")) {
+            if (paramsVector.size() == 3) {
+                JSONObject data = settings.get(paramsVector.get(1));
+                if (data != null) {
+                    return data.get(paramsVector.get(2)).toString();
                 }
             }
+        }
 
-            String valuePath = sb.toString();
+        if (paramsVector.get(0).equalsIgnoreCase("levelscount")) {
+            if (paramsVector.size() == 2) {
+                return Upgrades.getLevelsCount(paramsVector.get(1));
+            }
+        }
 
-            return upgradesConfig.getString(valuePath);
+        if (paramsVector.get(0).equalsIgnoreCase("bordersize")) {
+            if (paramsVector.size() == 2) {
+                return Upgrades.getBorderSize(offlinePlayer, paramsVector.get(1));
+            }
+        }
+
+        if (paramsVector.get(0).equalsIgnoreCase("normalgenrates")) {
+            if (paramsArray.length == 3) {
+                return Upgrades.getNormalGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2));
+            }
+
+            if (paramsArray.length == 4) {
+                return Upgrades.getNormalGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2) + "_" + paramsVector.get(3));
+            }
         }
         
         return null;
