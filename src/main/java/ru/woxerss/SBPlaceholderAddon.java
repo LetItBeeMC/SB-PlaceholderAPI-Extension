@@ -18,8 +18,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import ru.woxerss.superiorskyblock.UpgradesParser;
 
-public class ConfigParser extends PlaceholderExpansion {
+public class SBPlaceholderAddon extends PlaceholderExpansion {
     private final String VERSION = "1.2";
 
     HashMap<String, JSONObject> settings = new HashMap<>();
@@ -83,7 +84,7 @@ public class ConfigParser extends PlaceholderExpansion {
             }
         }
 
-        Upgrades.load(getPlaceholderAPI());
+        UpgradesParser.load(getPlaceholderAPI());
 
         return true;
     }
@@ -113,6 +114,10 @@ public class ConfigParser extends PlaceholderExpansion {
             }
         }
 
+        /**
+         * Custom Json Placeholder
+         * %configparser_json_filename_key%
+         */
         if (paramsVector.get(0).equalsIgnoreCase("json")) {
             if (paramsVector.size() == 3) {
                 JSONObject data = settings.get(paramsVector.get(1));
@@ -122,25 +127,52 @@ public class ConfigParser extends PlaceholderExpansion {
             }
         }
 
+        /**
+         * Upgrade's levels count
+         * %configparser_levelscount_upgrade%
+         */
         if (paramsVector.get(0).equalsIgnoreCase("levelscount")) {
             if (paramsVector.size() == 2) {
-                return Upgrades.getLevelsCount(paramsVector.get(1));
+                return UpgradesParser.getLevelsCount(paramsVector.get(1));
             }
         }
 
+        /**
+         * Border Size at Level
+         * %configparser_bordersize_level%
+         */
         if (paramsVector.get(0).equalsIgnoreCase("bordersize")) {
             if (paramsVector.size() == 2) {
-                return Upgrades.getBorderSize(offlinePlayer, paramsVector.get(1));
+                return UpgradesParser.getBorderSize(offlinePlayer, paramsVector.get(1));
             }
         }
 
+        /**
+         * Normal Generator Rates at Level
+         * %configparser_normalgenrates_level_material%
+         */
         if (paramsVector.get(0).equalsIgnoreCase("normalgenrates")) {
             if (paramsVector.size() == 3) {
-                return Upgrades.getNormalGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2));
+                return UpgradesParser.getNormalGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2));
             }
 
             if (paramsVector.size() == 4) {
-                return Upgrades.getNormalGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2) + "_" + paramsVector.get(3));
+                return UpgradesParser.getNormalGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2) + "_" + paramsVector.get(3));
+            }
+        }
+
+
+        /**
+         * Generator Rates Difference for Offline Player
+         * %configparser_genratesdiff_material_arrowColor_valueColor%
+         */
+        if (paramsVector.get(0).equalsIgnoreCase("genratesdiff")) {
+            if (paramsVector.size() == 4) {
+                return UpgradesParser.getDifferenceGeneratorRates(offlinePlayer, paramsVector.get(1), paramsVector.get(2), paramsVector.get(3));
+            }
+
+            if (paramsVector.size() == 5) {
+                return UpgradesParser.getDifferenceGeneratorRates(offlinePlayer, paramsVector.get(1) + "_" + paramsVector.get(2), paramsVector.get(3), paramsVector.get(4));
             }
         }
         
