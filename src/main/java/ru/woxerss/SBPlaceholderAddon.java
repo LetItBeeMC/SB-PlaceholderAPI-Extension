@@ -21,7 +21,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import ru.woxerss.superiorskyblock.UpgradesParser;
 
 public class SBPlaceholderAddon extends PlaceholderExpansion {
-    private final String VERSION = "1.2";
+    private final String VERSION = "1.3";
 
     HashMap<String, JSONObject> settings = new HashMap<>();
 
